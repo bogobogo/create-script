@@ -33,6 +33,18 @@ inquirer
       when: function(answers) {
         return answers.script_lang === "bash-script";
       }
+    },
+    {
+      type: "list",
+      name: "ide",
+      message: "choose your favorite ide",
+      choices: ["vs-code", "web-storm", "none"],
+      filter: function(val) {
+        return val.toLowerCase();
+      },
+      // when: function(answers) {
+      //   return configfile === empty;     //TODO only when some file is empty
+      // }
     }
   ])
   .then(async answers => {
@@ -65,8 +77,9 @@ async function handleNodeScript(answers) {
       console.log(err);
     }
   );
+  const ide = (answers.ide === "vs-code") ? "code ." : (answers.ide === "web-storm") ? "open -a /Applications/WebStorm.app ." :":";
   await exec(
-    `cd ~/scripts/${answers.script} && code . && npm install inquirer`
+    `cd ~/scripts/${answers.script} && ${ide} && npm install inquirer`
   );
   await exec(
     `echo "alias ${answers.script}='node ~/scripts/${
