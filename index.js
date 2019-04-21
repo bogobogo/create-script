@@ -55,7 +55,7 @@ inquirer
 async function handleNodeScript(answers) {
   await exec(`mkdir ~/scripts/${answers.script}`);
   const { stdout: initialScriptContent } = await exec(
-    "cat ~/scripts/example/initialFile.js"
+    "cat ~/scripts/create-script/initialFile.js"
   );
   await exec(`cd ~/scripts/${answers.script} && npm init -y`);
   fs.writeFile(
