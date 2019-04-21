@@ -5,6 +5,14 @@ const fs = require("fs");
 const join = require("path").join;
 const homedir = require("os").homedir();
 const inquirer = require("inquirer");
+const readFile = promisify(fs.readFile)
+
+let ideData;
+readFile(join(homedir, 'scripts/create-script/ideConfig.txt'))
+    .then(data => {
+      ideData =""+data
+    })
+    .catch(err => console.log(err))
 
 inquirer
   .prompt([
@@ -32,6 +40,18 @@ inquirer
       message: "Type in your bash script:",
       when: function(answers) {
         return answers.script_lang === "bash-script";
+      }
+    },
+    {
+      type: "list",
+      name: "ide",
+      message: "choose your favorite ide",
+      choices: ["vs-code", "web-storm", "none"],
+      when: function() {
+        return  ideData === "";     //ask only when ideConfig.txt is empty
+      },
+      filter: function(val) {
+        return val.toLowerCase();
       }
     }
   ])
@@ -65,8 +85,20 @@ async function handleNodeScript(answers) {
       console.log(err);
     }
   );
+  if (answers.ide) {
+    fs.writeFile(
+        join(homedir, 'scripts/create-script/ideConfig.txt'),
+        answers.ide,
+        err => {
+          console.log(err);
+        }
+    );
+    ideData = answers.ide;
+  }
+  const ide = (ideData === "vs-code") ? "code ." : (ideData === "web-storm") ? "open -a /Applications/WebStorm.app ." : ":";
+
   await exec(
-    `cd ~/scripts/${answers.script} && code . && npm install inquirer`
+    `cd ~/scripts/${answers.script} && ${ide} && npm install inquirer`
   );
   await exec(
     `echo "alias ${answers.script}='node ~/scripts/${
