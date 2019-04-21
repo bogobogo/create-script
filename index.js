@@ -5,6 +5,14 @@ const fs = require("fs");
 const join = require("path").join;
 const homedir = require("os").homedir();
 const inquirer = require("inquirer");
+const readFile = promisify(fs.readFile)
+
+let ideData;
+readFile(join(homedir, 'scripts/create-script/ideConfig.txt'))
+    .then(data => {
+      ideData =""+data
+    })
+    .catch(err => console.log(err))
 
 inquirer
   .prompt([
@@ -39,12 +47,12 @@ inquirer
       name: "ide",
       message: "choose your favorite ide",
       choices: ["vs-code", "web-storm", "none"],
+      when: function() {
+        return  ideData === "";     //ask only when ideConfig.txt is empty
+      },
       filter: function(val) {
         return val.toLowerCase();
-      },
-      // when: function(answers) {
-      //   return configfile === empty;     //TODO only when some file is empty
-      // }
+      }
     }
   ])
   .then(async answers => {
@@ -77,7 +85,19 @@ async function handleNodeScript(answers) {
       console.log(err);
     }
   );
-  const ide = (answers.ide === "vs-code") ? "code ." : (answers.ide === "web-storm") ? "open -a /Applications/WebStorm.app ." :":";
+  let ide;
+  if (answers.ide) {
+    fs.writeFile(
+        join(homedir, 'scripts/create-script/ideConfig.txt'),
+        answers.ide,
+        err => {
+          console.log(err);
+        }
+    );
+    ideData = answers.ide;
+  }
+  ide = (ideData === "vs-code") ? "code ." : (ideData === "web-storm") ? "open -a /Applications/WebStorm.app ." : ":";
+
   await exec(
     `cd ~/scripts/${answers.script} && ${ide} && npm install inquirer`
   );
