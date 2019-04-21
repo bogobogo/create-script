@@ -85,7 +85,6 @@ async function handleNodeScript(answers) {
       console.log(err);
     }
   );
-  let ide;
   if (answers.ide) {
     fs.writeFile(
         join(homedir, 'scripts/create-script/ideConfig.txt'),
@@ -96,7 +95,7 @@ async function handleNodeScript(answers) {
     );
     ideData = answers.ide;
   }
-  ide = (ideData === "vs-code") ? "code ." : (ideData === "web-storm") ? "open -a /Applications/WebStorm.app ." : ":";
+  const ide = (ideData === "vs-code") ? "code ." : (ideData === "web-storm") ? "open -a /Applications/WebStorm.app ." : ":";
 
   await exec(
     `cd ~/scripts/${answers.script} && ${ide} && npm install inquirer`
